@@ -135,13 +135,18 @@ Best Model: Naive Bayes ✅
 
 ---
 
+## 📁 Project Structure
+```
 LoanSense/
 │
 ├── 📓 LoanSense.ipynb              # Main Jupyter notebook
+│
 ├── 📂 data/
-│   └── loan_approval_data.csv      # Raw dataset
-├── requirements.txt                # Dependencies
-└── README.md                       # Documentation
+│   └── loan_approval_data.csv      # Raw dataset (1,000 records)
+│
+├── requirements.txt                # Python dependencies
+└── README.md                       # Project documentation
+```
 
 ## 👨‍💻 Author
 

@@ -5,11 +5,11 @@
 > key optimization metric to minimize costly false approvals.
 
 ![Python](https://img.shields.io/badge/Python-3.8+-blue)
-![Best Model](https://img.shields.io/badge/Best%20Model-Naive%20Bayes-green)
-![Accuracy](https://img.shields.io/badge/Accuracy-86.5%25-brightgreen)
-![Precision](https://img.shields.io/badge/Precision-80.35%25-brightgreen)
+![Best Model](https://img.shields.io/badge/Best%20Model-Decision%20Tree-green)
+![Accuracy](https://img.shields.io/badge/Accuracy-92%25-brightgreen)
+![Precision](https://img.shields.io/badge/Precision-84.37%25-brightgreen)
 ![Dataset](https://img.shields.io/badge/Dataset-1000%20Records-orange)
-![Models Tested](https://img.shields.io/badge/Models%20Tested-3-purple)
+![Models Tested](https://img.shields.io/badge/Models%20Tested-5-purple)
 
 ---
 
@@ -49,17 +49,16 @@ false approvals.
 
 ## 🔍 Key EDA Findings
 
-- 📉 **Imbalanced dataset** — only 31.37% approvals (298 out of 950)
+- 📉 **Imbalanced dataset** — only 31.37% approvals (298 out of 1,000)
 - 💳 **Credit Score ≥ 650** was a strong threshold for loan approval
 - 💼 **Contract employees** had the highest approval rate at 37.09%
 - 🎓 **Graduates** were approved 5.2% more than non-graduates
-- 📊 **DTI Ratio & Credit Score** were the top correlated features
-  with loan approval (confirmed via correlation heatmap)
+- 📊 **DTI Ratio & Credit Score** were the top correlated features with loan approval (confirmed via correlation heatmap)
 
 ---
 
 ## 🔄 Complete ML Pipeline
-```
+```text
 Raw CSV (1,000 records, 20 columns)
         ↓
 Missing Value Imputation
@@ -71,53 +70,88 @@ Exploratory Data Analysis (EDA)
   → Outlier detection (Boxplots)
   → Credit Score vs Approval histogram
         ↓
+Feature Engineering
+  → DTI_Ratio² (squared for non-linear patterns)
+  → Credit_Score² (squared for non-linear patterns)
+        ↓
 Feature Encoding
   → Label Encoding (Education_Level, Loan_Approved)
   → One-Hot Encoding (Employment, Marital, Purpose,
     Area, Gender, Employer — drop='first')
         ↓
-Feature Engineering
-  → DTI_Ratio² (squared for non-linear patterns)
-  → Credit_Score² (squared for non-linear patterns)
-        ↓
-Train/Test Split (80/20 · random_state=42)
+Train/Test Split (80/20 · random_state=42 · stratified)
         ↓
 Feature Scaling (StandardScaler)
         ↓
-Model Comparison (3 algorithms)
+Model Comparison (5 algorithms)
         ↓
-Best Model: Naive Bayes ✅
+Hyperparameter Tuning (GridSearchCV)
+        ↓
+Best Model: Decision Tree ✅
 ```
 
 ---
 
 ## 🤖 Model Comparison
 
-| Model | Key Metric (Precision) | Notes |
-|-------|----------------------|-------|
-| Logistic Regression | Tested | Baseline model |
-| KNN (k=7) | Tested | Weak on high-dim sparse data |
-| **Naive Bayes** ✅ | **80.35%** | **Best Precision — selected** |
+| Model | Precision | Accuracy | Notes |
+|-------|-----------|----------|-------|
+| KNN (k=7) | 63.04% | 75.5% | Weak on high-dim sparse data |
+| Naive Bayes | 78.33% | 86.5% | Good baseline |
+| Logistic Regression | 79.03% | 87.5% | Solid linear model |
+| SVM (RBF, C=3) | 80.35% | 86.5% | Strong but slow |
+| **Decision Tree** ✅ | **84.37%** | **92.0%** | **Best Precision — selected** |
 
-> 💡 KNN was expected to underperform — with a large number of
-> encoded columns, data becomes sparse, reducing KNN's effectiveness.
-> This was noted in the code comments before testing.
+> 💡 KNN was expected to underperform — with a large number of encoded columns, data becomes sparse, reducing KNN's effectiveness. This was noted in the code comments before testing.
 
 ---
 
-## 📈 Final Model Performance (Naive Bayes)
+## 📈 Final Model Performance (Decision Tree)
 
 | Metric | Score |
 |--------|-------|
-| **Precision** | **80.35%** |
-| **Accuracy** | **86.5%** |
-| Train/Test Split | 80% / 20% |
+| **Precision** | **84.37%** |
+| **Accuracy** | **92.0%** |
+| **Recall** | **90.0%** |
+| **F1 Score** | **87.10%** |
+| Best Params | max_depth=9 · min_samples_split=10 |
+| Train/Test Split | 80% / 20% (stratified) |
 | Test Set Size | 200 records |
 
-> ⚡ **Why Precision?** A False Positive (approving a bad loan) 
-> is more costly than a False Negative (rejecting a good one).
-> Precision directly measures how many predicted approvals
-> were actually correct.
+### Confusion Matrix
+```text
+              Predicted No   Predicted Yes
+Actual No        130              10
+Actual Yes         6              54
+```
+
+> ⚡ **Why Precision?** A False Positive (approving a bad loan) is more costly than a False Negative (rejecting a good one). Precision directly measures how many predicted approvals were actually correct.
+
+---
+
+## 📁 Project Structure
+```text
+LoanSense/
+│
+├── 📓 LoanSense_Analysis.ipynb     # Full EDA, encoding, all 5 models & tuning
+├── 📓 LoanSense_Pipeline.ipynb     # Clean final pipeline — best model only
+│
+├── 📂 data/
+│   └── loan_approval_data.csv      # Raw dataset (1,000 records)
+│
+├── requirements.txt                # Python dependencies
+└── README.md                       # Project documentation
+```
+
+---
+
+## ⚡ Quick Start
+```bash
+git clone https://github.com/Vaibhav1o1/LoanSense.git
+cd LoanSense
+pip install -r requirements.txt
+jupyter notebook LoanSense_Pipeline.ipynb
+```
 
 ---
 
@@ -128,30 +162,17 @@ Best Model: Naive Bayes ✅
 | Python | Core language |
 | NumPy | Numerical computing & feature engineering |
 | Pandas | Data loading, cleaning & EDA |
-| Scikit-learn | Imputation, encoding, scaling, modelling |
-| Matplotlib | Pie charts, histograms, subplots |
+| Scikit-learn | Imputation, encoding, scaling, modelling, GridSearchCV |
+| Matplotlib | Pie charts, histograms, tree visualization |
 | Seaborn | Boxplots, heatmaps, bar charts |
 | JupyterLab | Development environment |
 
 ---
 
-## 📁 Project Structure
-```
-LoanSense/
-│
-├── 📓 LoanSense.ipynb              # Main Jupyter notebook
-│
-├── 📂 data/
-│   └── loan_approval_data.csv      # Raw dataset (1,000 records)
-│
-├── requirements.txt                # Python dependencies
-└── README.md                       # Project documentation
-```
-
 ## 👨‍💻 Author
 
-**Vaibhav** — ECE Undergrad @ NIT Raipur
-🎯 Aspiring AI/ML Engineer | Competitive Programmer
+**Vaibhav Gupta** — Aspiring AI/ML Engineer | Competitive Programmer
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue)](https://www.linkedin.com/in/vaibhav1o1/)
+[![GitHub](https://img.shields.io/badge/GitHub-Vaibhav1o1-black)](https://github.com/Vaibhav1o1)
 [![Email](https://img.shields.io/badge/Email-Contact-red)](mailto:techvaibhav27@gmail.com)
